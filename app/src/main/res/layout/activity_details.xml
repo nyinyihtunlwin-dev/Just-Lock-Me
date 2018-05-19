@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.MainActivity">
+    tools:context=".activities.DetailsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -25,35 +25,16 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <RelativeLayout
+        <include
+            android:id="@+id/vp_empty"
+            layout="@layout/view_pod_empty"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <android.support.v4.widget.ContentLoadingProgressBar
-                android:id="@+id/loading_bar"
-                style="@android:style/Widget.Material.Light.ProgressBar.Large"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/tv_message"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/loading_bar"
-                android:layout_centerHorizontal="true"
-                android:text="@string/no_data"
-                android:textColor="@color/primary_text"
-                android:visibility="gone" />
-        </RelativeLayout>
+            android:layout_height="match_parent" />
 
         <com.nyinyihtunlwin.justlockme.components.SmartRecyclerView
             android:id="@+id/rv_apps"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
-
     </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -1,17 +1,49 @@
 package com.nyinyihtunlwin.justlockme.activities;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.widget.ContentLoadingProgressBar;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.nyinyihtunlwin.justlockme.R;
+import com.nyinyihtunlwin.justlockme.adapters.AppListAdapter;
+import com.nyinyihtunlwin.justlockme.components.EmptyViewPod;
+import com.nyinyihtunlwin.justlockme.components.SmartRecyclerView;
+import com.nyinyihtunlwin.justlockme.data.vos.AppVO;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends BaseActivity {
+
+    @BindView(R.id.rv_apps)
+    SmartRecyclerView rvApps;
+
+    @BindView(R.id.loading_bar)
+    ContentLoadingProgressBar loadingProgressBar;
+
+    @BindView(R.id.tv_message)
+    TextView tvMessge;
+
+    private AppListAdapter mAdapter;
+    private List<AppVO> installedApps;
+    private PackageManager packageManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,35 +52,73 @@ public class MainActivity extends BaseActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        ButterKnife.bind(this, this);
+        mAdapter = new AppListAdapter(this);
+        rvApps.setAdapter(mAdapter);
+        rvApps.setHasFixedSize(true);
+        rvApps.setLayoutManager(new LinearLayoutManager(this));
+
+        installedApps = new ArrayList<>();
+        packageManager = getPackageManager();
+        new LoadApplications().execute();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    protected void onStop() {
+        super.onStop();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    private class LoadApplications extends AsyncTask<Void, Void, Void> {
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingProgressBar.setVisibility(View.VISIBLE);
         }
 
-        return super.onOptionsItemSelected(item);
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+
+            List<PackageInfo> apps = packageManager.getInstalledPackages(PackageManager.SIGNATURE_MATCH);
+            if (apps != null && !apps.isEmpty()) {
+                for (int i = 0; i < apps.size(); i++) {
+                    PackageInfo p = apps.get(i);
+                    ApplicationInfo appInfo = null;
+                    try {
+                        appInfo = packageManager.getApplicationInfo(p.packageName, 0);
+                        AppVO app = new AppVO();
+                        app.setName(p.applicationInfo.loadLabel(packageManager).toString());
+                        app.setPackageName(p.packageName);
+                        app.setVersionName(p.versionName);
+                        app.setVersionCode(p.versionCode);
+                        app.setIcon(p.applicationInfo.loadIcon(packageManager));
+                        installedApps.add(app);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            loadingProgressBar.setVisibility(View.GONE);
+            if (installedApps.size() > 0) {
+                mAdapter.setNewData(installedApps);
+                tvMessge.setVisibility(View.GONE);
+            } else {
+                tvMessge.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
     }
+
+
 }

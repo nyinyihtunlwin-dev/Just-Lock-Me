@@ -14,9 +14,6 @@ import butterknife.ButterKnife;
 
 public class EmptyViewPod extends RelativeLayout {
 
-    @BindView(R.id.iv_empty)
-    ImageView ivEmpty;
-
     @BindView(R.id.tv_empty)
     TextView tvEmpty;
 
@@ -40,11 +37,6 @@ public class EmptyViewPod extends RelativeLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         ButterKnife.bind(this, this);
-    }
-
-    public void setEmptyData(int emptyImageId, String emptyMsg) {
-        ivEmpty.setImageResource(emptyImageId);
-        tvEmpty.setText(emptyMsg);
     }
 
     public void setEmptyData(String emptyMsg) {
